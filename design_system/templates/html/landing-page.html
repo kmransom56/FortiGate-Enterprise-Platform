@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{APP_TITLE}} - FortiGate Professional</title>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <!-- FortiGate Design System -->
+  <link href="/static/css/fortigate-design-system.css" rel="stylesheet">
+  
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .main-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    
+    .app-logo {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(45deg, #FF6B35, #F7931E);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+      box-shadow: 0 10px 30px rgba(255,107,53,0.3);
+    }
+    
+    .app-logo i {
+      font-size: 3rem;
+      color: white;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+          <div class="glass-container p-5">
+            
+            <!-- Header Section -->
+            <div class="text-center mb-5">
+              <div class="app-logo pulse">
+                <i class="{{APP_ICON}}"></i>
+              </div>
+              <h1 class="fw-bold text-dark mb-2">{{APP_TITLE}}</h1>
+              <p class="text-muted lead">{{APP_DESCRIPTION}}</p>
+            </div>
+
+            <!-- Status Widgets Row -->
+            <div class="row mb-5" id="statusWidgets">
+              <!-- FortiGate Status Widget -->
+              <div class="col-md-4">
+                <div class="status-widget status-online">
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-router text-success fa-2x me-3"></i>
+                    <div>
+                      <h5 class="mb-1">FortiGate Status</h5>
+                      <p class="mb-0 text-muted">
+                        <span class="status-indicator online"></span>
+                        <span id="fortigate-status">{{FORTIGATE_STATUS}}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Custom Widget 1 -->
+              <div class="col-md-4">
+                <div class="status-widget status-info">
+                  <div class="d-flex align-items-center">
+                    <i class="{{WIDGET1_ICON}} text-info fa-2x me-3"></i>
+                    <div>
+                      <h5 class="mb-1">{{WIDGET1_TITLE}}</h5>
+                      <p class="mb-0 text-muted">
+                        <span class="status-indicator online"></span>
+                        <span id="widget1-status">{{WIDGET1_STATUS}}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Custom Widget 2 -->
+              <div class="col-md-4">
+                <div class="status-widget status-warning">
+                  <div class="d-flex align-items-center">
+                    <i class="{{WIDGET2_ICON}} text-warning fa-2x me-3"></i>
+                    <div>
+                      <h5 class="mb-1">{{WIDGET2_TITLE}}</h5>
+                      <p class="mb-0 text-muted">
+                        <span class="status-indicator online"></span>
+                        <span id="widget2-status">{{WIDGET2_STATUS}}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="row justify-content-center" id="navigationButtons">
+              <!-- Primary Actions -->
+              {{#PRIMARY_ACTIONS}}
+              <div class="col-md-4 mb-3">
+                <a href="{{URL}}" class="btn-fortigate w-100 text-center d-block">
+                  <i class="{{ICON}} me-2"></i>
+                  {{TITLE}}
+                  <small class="d-block mt-1 opacity-75">{{DESCRIPTION}}</small>
+                </a>
+              </div>
+              {{/PRIMARY_ACTIONS}}
+              
+              <!-- Secondary Actions -->
+              {{#SECONDARY_ACTIONS}}
+              <div class="col-md-4 mb-3">
+                <a href="{{URL}}" class="btn-fortigate btn-secondary w-100 text-center d-block">
+                  <i class="{{ICON}} me-2"></i>
+                  {{TITLE}}
+                  <small class="d-block mt-1 opacity-75">{{DESCRIPTION}}</small>
+                </a>
+              </div>
+              {{/SECONDARY_ACTIONS}}
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-4">
+              <small class="text-muted">
+                <i class="fas fa-cog me-1"></i>
+                {{FOOTER_TEXT}}
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Status Updates Script -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Customizable status update function
+    async function updateStatus() {
+      try {
+        // Update FortiGate status
+        const response = await fetch('/api/status');
+        if (response.ok) {
+          const data = await response.json();
+          document.getElementById('fortigate-status').textContent = data.fortigate || 'Online';
+          
+          // Update custom widgets
+          if (data.widget1) {
+            document.getElementById('widget1-status').textContent = data.widget1;
+          }
+          if (data.widget2) {
+            document.getElementById('widget2-status').textContent = data.widget2;
+          }
+        }
+      } catch (error) {
+        console.error('Status update failed:', error);
+        document.getElementById('fortigate-status').textContent = 'Connection Error';
+      }
+    }
+
+    // Animation on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      const widgets = document.querySelectorAll('.status-widget');
+      widgets.forEach((widget, index) => {
+        setTimeout(() => {
+          widget.style.opacity = '0';
+          widget.style.transform = 'translateY(20px)';
+          widget.style.transition = 'all 0.5s ease';
+          
+          setTimeout(() => {
+            widget.style.opacity = '1';
+            widget.style.transform = 'translateY(0)';
+          }, 100);
+        }, index * 150);
+      });
+
+      // Start status updates
+      updateStatus();
+      setInterval(updateStatus, 30000); // Update every 30 seconds
+    });
+  </script>
+</body>
+</html>

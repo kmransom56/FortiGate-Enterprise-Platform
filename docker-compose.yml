@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # Frontend - React TypeScript Application
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_WS_URL=ws://localhost:8000/ws
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/src:/app/src
+    networks:
+      - fortigate-network
+
+  # Backend - Python FastAPI Services
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/fortigate_enterprise
+      - REDIS_URL=redis://redis:6379/0
+      - POWER_AUTOMATE_ENABLED=true
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+      - ./config:/app/config
+    networks:
+      - fortigate-network
+
+  # Database - PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=fortigate_enterprise
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deployment/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - fortigate-network
+
+  # Cache - Redis
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - fortigate-network
+
+  # Web Server - Nginx
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deployment/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./deployment/certificates:/etc/nginx/certs
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - fortigate-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  fortigate-network:
+    driver: bridge

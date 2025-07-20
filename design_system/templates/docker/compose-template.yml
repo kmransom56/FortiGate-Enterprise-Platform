@@ -1,0 +1,163 @@
+# FortiGate Professional Application - Docker Compose Template
+# Customize the variables below for your specific project
+
+services:
+  {{MAIN_SERVICE_NAME}}:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "{{MAIN_PORT}}:{{MAIN_PORT}}"
+    restart: always
+    networks:
+      - {{NETWORK_NAME}}
+    secrets:
+      - fortigate_api_token
+      - fortigate_password
+      {{#ADDITIONAL_SECRETS}}
+      - {{SECRET_NAME}}
+      {{/ADDITIONAL_SECRETS}}
+    volumes:
+      - ./app/certs:/app/certs
+      - ./app/data:/app/data  # Persistent data storage
+      {{#ADDITIONAL_VOLUMES}}
+      - {{HOST_PATH}}:{{CONTAINER_PATH}}  # {{VOLUME_DESCRIPTION}}
+      {{/ADDITIONAL_VOLUMES}}
+    environment:
+      # FortiGate Configuration
+      - FORTIGATE_API_TOKEN_FILE=/run/secrets/fortigate_api_token
+      - FORTIGATE_CERT_PATH=/app/certs/fortigate.pem
+      - FORTIGATE_HOST={{FORTIGATE_HOST}}
+      - FORTIGATE_USERNAME={{FORTIGATE_USERNAME}}
+      - FORTIGATE_PASSWORD_FILE=/run/secrets/fortigate_password
+      - FORTIGATE_VERIFY_SSL={{FORTIGATE_VERIFY_SSL}}
+      
+      # Application Configuration
+      - LOG_LEVEL={{LOG_LEVEL}}
+      - APP_NAME={{APP_NAME}}
+      - APP_VERSION={{APP_VERSION}}
+      
+      # Optional FortiSwitch Configuration
+      {{#FORTISWITCH_ENABLED}}
+      - FORTISWITCH_HOST={{FORTISWITCH_HOST}}
+      - FORTISWITCH_USERNAME={{FORTISWITCH_USERNAME}}
+      - FORTISWITCH_PASSWORD_FILE=/run/secrets/fortiswitch_password
+      {{/FORTISWITCH_ENABLED}}
+      
+      # Custom Environment Variables
+      {{#CUSTOM_ENV_VARS}}
+      - {{ENV_NAME}}={{ENV_VALUE}}  # {{ENV_DESCRIPTION}}
+      {{/CUSTOM_ENV_VARS}}
+    
+    {{#HEALTH_CHECK_ENABLED}}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:{{MAIN_PORT}}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    {{/HEALTH_CHECK_ENABLED}}
+
+  {{#MONITORING_SERVICE_ENABLED}}
+  {{MONITORING_SERVICE_NAME}}:
+    build:
+      context: .
+      dockerfile: Dockerfile.{{MONITORING_SERVICE_NAME}}
+    restart: always
+    networks:
+      - {{NETWORK_NAME}}
+    environment:
+      - FORTIGATE_HOST={{FORTIGATE_HOST}}
+      - FORTIGATE_API_TOKEN_FILE=/run/secrets/fortigate_api_token
+      - MONITORING_INTERVAL={{MONITORING_INTERVAL}}
+      - LOG_LEVEL={{LOG_LEVEL}}
+    secrets:
+      - fortigate_api_token
+    depends_on:
+      - {{MAIN_SERVICE_NAME}}
+  {{/MONITORING_SERVICE_ENABLED}}
+
+  {{#DATABASE_ENABLED}}
+  {{DATABASE_SERVICE_NAME}}:
+    image: {{DATABASE_IMAGE}}
+    restart: always
+    networks:
+      - {{NETWORK_NAME}}
+    environment:
+      - POSTGRES_DB={{DATABASE_NAME}}
+      - POSTGRES_USER={{DATABASE_USER}}
+      - POSTGRES_PASSWORD_FILE=/run/secrets/database_password
+    secrets:
+      - database_password
+    volumes:
+      - {{DATABASE_VOLUME_NAME}}:/var/lib/postgresql/data
+    ports:
+      - "{{DATABASE_PORT}}:5432"  # Only expose if needed for external access
+  {{/DATABASE_ENABLED}}
+
+  {{#REDIS_ENABLED}}
+  {{REDIS_SERVICE_NAME}}:
+    image: redis:7-alpine
+    restart: always
+    networks:
+      - {{NETWORK_NAME}}
+    volumes:
+      - {{REDIS_VOLUME_NAME}}:/data
+    command: redis-server --appendonly yes
+  {{/REDIS_ENABLED}}
+
+# Docker Secrets for secure credential management
+secrets:
+  fortigate_api_token:
+    file: ./secrets/fortigate_api_token.txt
+  fortigate_password:
+    file: ./secrets/fortigate_password.txt
+  
+  {{#FORTISWITCH_ENABLED}}
+  fortiswitch_password:
+    file: ./secrets/fortiswitch_password.txt
+  {{/FORTISWITCH_ENABLED}}
+  
+  {{#DATABASE_ENABLED}}
+  database_password:
+    file: ./secrets/database_password.txt
+  {{/DATABASE_ENABLED}}
+  
+  {{#ADDITIONAL_SECRETS}}
+  {{SECRET_NAME}}:
+    file: ./secrets/{{SECRET_FILE}}
+  {{/ADDITIONAL_SECRETS}}
+
+# Networks for service communication
+networks:
+  {{NETWORK_NAME}}:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: {{NETWORK_SUBNET}}
+
+# Persistent volumes for data storage
+{{#VOLUMES_ENABLED}}
+volumes:
+  {{#DATABASE_ENABLED}}
+  {{DATABASE_VOLUME_NAME}}:
+    driver: local
+  {{/DATABASE_ENABLED}}
+  
+  {{#REDIS_ENABLED}}
+  {{REDIS_VOLUME_NAME}}:
+    driver: local
+  {{/REDIS_ENABLED}}
+  
+  {{#CUSTOM_VOLUMES}}
+  {{VOLUME_NAME}}:
+    driver: local
+    {{#VOLUME_OPTIONS}}
+    driver_opts:
+      {{VOLUME_OPTION_KEY}}: {{VOLUME_OPTION_VALUE}}
+    {{/VOLUME_OPTIONS}}
+  {{/CUSTOM_VOLUMES}}
+{{/VOLUMES_ENABLED}}
+
+# Development override file support
+# Create docker-compose.override.yml for local development customizations

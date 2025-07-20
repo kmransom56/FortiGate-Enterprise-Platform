@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FortiGate Network Monitor Pro - Professional Network Management</title>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <!-- FortiGate Design System -->
+  <link href="/static/css/fortigate-design-system.css" rel="stylesheet">
+  
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .main-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    
+    .app-logo {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(45deg, #FF6B35, #F7931E);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+      box-shadow: 0 10px 30px rgba(255,107,53,0.3);
+    }
+    
+    .app-logo i {
+      font-size: 3rem;
+      color: white;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+          <div class="glass-container p-5">
+            
+            <!-- Header Section -->
+            <div class="text-center mb-5">
+              <div class="app-logo pulse">
+                <i class="fas fa-network-wired"></i>
+              </div>
+              <h1 class="fw-bold text-dark mb-2">FortiGate Network Monitor Pro</h1>
+              <p class="text-muted lead">Professional Network Monitoring & Management Dashboard</p>
+            </div>
+
+            <!-- Status Widgets Row -->
+            <div class="row mb-5" id="statusWidgets">
+              <!-- FortiGate Status Widget -->
+              <div class="col-md-4">
+                <div class="status-widget status-online">
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-shield-alt text-success fa-2x me-3"></i>
+                    <div>
+                      <h5 class="mb-1">FortiGate Status</h5>
+                      <p class="mb-0 text-muted">
+                        <span class="status-indicator online"></span>
+                        <span id="fortigate-status">Online & Secure</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Network Devices Widget -->
+              <div class="col-md-4">
+                <div class="status-widget status-info">
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-devices text-info fa-2x me-3"></i>
+                    <div>
+                      <h5 class="mb-1">Network Devices</h5>
+                      <p class="mb-0 text-muted">
+                        <span class="status-indicator online"></span>
+                        <span id="device-count">Scanning...</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Security Policies Widget -->
+              <div class="col-md-4">
+                <div class="status-widget status-warning">
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-shield-check text-warning fa-2x me-3"></i>
+                    <div>
+                      <h5 class="mb-1">Security Policies</h5>
+                      <p class="mb-0 text-muted">
+                        <span class="status-indicator online"></span>
+                        <span id="policy-status">Active & Monitoring</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="row justify-content-center" id="navigationButtons">
+              <!-- Network Monitoring -->
+              <div class="col-md-4 mb-3">
+                <a href="/monitoring" class="btn-fortigate w-100 text-center d-block">
+                  <i class="fas fa-chart-line me-2"></i>
+                  Network Monitoring
+                  <small class="d-block mt-1 opacity-75">Real-time network analytics</small>
+                </a>
+              </div>
+              
+              <!-- Device Discovery -->
+              <div class="col-md-4 mb-3">
+                <a href="/discovery" class="btn-fortigate w-100 text-center d-block">
+                  <i class="fas fa-search me-2"></i>
+                  Device Discovery
+                  <small class="d-block mt-1 opacity-75">Automated network scanning</small>
+                </a>
+              </div>
+              
+              <!-- Security Dashboard -->
+              <div class="col-md-4 mb-3">
+                <a href="/security" class="btn-fortigate w-100 text-center d-block">
+                  <i class="fas fa-shield-virus me-2"></i>
+                  Security Dashboard
+                  <small class="d-block mt-1 opacity-75">Threat monitoring & analysis</small>
+                </a>
+              </div>
+              
+              <!-- Configuration Management -->
+              <div class="col-md-4 mb-3">
+                <a href="/config" class="btn-fortigate btn-secondary w-100 text-center d-block">
+                  <i class="fas fa-cogs me-2"></i>
+                  Configuration
+                  <small class="d-block mt-1 opacity-75">FortiGate settings & policies</small>
+                </a>
+              </div>
+              
+              <!-- Reports & Analytics -->
+              <div class="col-md-4 mb-3">
+                <a href="/reports" class="btn-fortigate btn-secondary w-100 text-center d-block">
+                  <i class="fas fa-chart-pie me-2"></i>
+                  Reports & Analytics
+                  <small class="d-block mt-1 opacity-75">Performance insights</small>
+                </a>
+              </div>
+              
+              <!-- System Health -->
+              <div class="col-md-4 mb-3">
+                <a href="/health" class="btn-fortigate btn-secondary w-100 text-center d-block">
+                  <i class="fas fa-heartbeat me-2"></i>
+                  System Health
+                  <small class="d-block mt-1 opacity-75">Infrastructure monitoring</small>
+                </a>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-4">
+              <small class="text-muted">
+                <i class="fas fa-cog me-1"></i>
+                Professional Network Management with Enterprise-Grade Monitoring
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Status Updates Script -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/js/fortigate-components.js"></script>
+  <script>
+    // Network Monitor specific functionality
+    async function updateNetworkStatus() {
+      try {
+        // Simulate API call for demo
+        const mockData = {
+          fortigate: 'Online & Secure',
+          devices: Math.floor(Math.random() * 20) + 15,
+          policies: 'Active & Monitoring'
+        };
+        
+        document.getElementById('fortigate-status').textContent = mockData.fortigate;
+        document.getElementById('device-count').textContent = `${mockData.devices} devices detected`;
+        document.getElementById('policy-status').textContent = mockData.policies;
+        
+        console.log('Network status updated:', mockData);
+      } catch (error) {
+        console.error('Status update failed:', error);
+      }
+    }
+
+    // Enhanced animations for network monitoring
+    document.addEventListener('DOMContentLoaded', function() {
+      // Start with initial update
+      updateNetworkStatus();
+      
+      // Update every 15 seconds for network monitoring
+      setInterval(updateNetworkStatus, 15000);
+      
+      // Add pulse animation to network icon
+      const logo = document.querySelector('.app-logo');
+      setInterval(() => {
+        logo.style.transform = 'scale(1.05)';
+        setTimeout(() => {
+          logo.style.transform = 'scale(1)';
+        }, 300);
+      }, 3000);
+    });
+  </script>
+</body>
+</html>
