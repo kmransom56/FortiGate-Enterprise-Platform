@@ -1,18 +1,20 @@
-# Deployment Dockerfile for FortiGate Management - OPTIMIZED
+# WAN Monitor Dockerfile for FortiGate Network Monitoring
 FROM python:3.12-slim
 
 # Set environment variables
-ENV UV_VERSION=0.1.19 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_VERSION=0.1.19
 
 # Create non-root user
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN groupadd -r monitor && useradd -r -g monitor monitor
 
 # Install dependencies and uv
 RUN apt-get update && apt-get install -y \
     curl \
     ca-certificates \
+    iputils-ping \
+    net-tools \
     && curl -Ls https://astral.sh/uv/install.sh | sh \
     && mv ~/.local/bin/uv /usr/local/bin/uv \
     && chmod +x /usr/local/bin/uv \
@@ -27,33 +29,23 @@ COPY requirements.txt ./
 # Install dependencies
 RUN uv pip install --no-cache-dir --system -r requirements.txt
 
-# Create necessary directories
-RUN mkdir -p /app/certs /app/static
-
-# Copy application files in logical order
-COPY app ./app
+# Copy WAN monitor specific code
+COPY wan_monitor ./wan_monitor
 COPY tools ./tools
 COPY scripts ./scripts
-
-# Copy static files and certificates
-COPY app/static/icons.db ./app/static/icons.db
-COPY app/certs/ ./app/certs/
 
 # Copy secrets (should be mounted as volumes in production)
 COPY secrets ./secrets
 
 # Change ownership to non-root user
-RUN chown -R appuser:appuser /app
+RUN chown -R monitor:monitor /app
 
 # Switch to non-root user
-USER appuser
-
-# Expose the port the app runs on
-EXPOSE 10000
+USER monitor
 
 # Add health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:10000/health || exit 1
+HEALTHCHECK --interval=60s --timeout=30s --start-period=10s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:8001/health')" || exit 1
 
-# Command to run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
+# Command to run the WAN monitor service
+CMD ["python", "-m", "wan_monitor.main"]
